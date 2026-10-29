@@ -23,7 +23,7 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
       method: 'POST',
       headers: {
         'x-user-id': TEST_USER_ID, 
-        'x-legal-consent': 'true'
+        'x-explicit-consent': 'true' // <--- यहाँ x-legal-consent को x-explicit-consent कर दिया है
       },
       body: formData,
     });
@@ -54,7 +54,7 @@ export async function startExamAutomation({ pin, examName }) {
       headers: {
         'Content-Type': 'application/json',
         'x-user-id': TEST_USER_ID, 
-        'x-legal-consent': 'true'
+        'x-explicit-consent': 'true' // <--- यहाँ भी x-explicit-consent कर दिया है
       },
       body: JSON.stringify({
         pin,
