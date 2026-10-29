@@ -18,54 +18,62 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
   formData.append('consent', 'true'); 
   formData.append('legalConsent', 'true');
 
-  const response = await fetch(`${API_BASE_URL}/api/vault/upload`, {
-    method: 'POST',
-    mode: 'cors', // CORS ko explicitly allow karne ke liye
-    headers: {
-      'x-user-id': TEST_USER_ID, 
-      'x-legal-consent': 'true'
-    },
-    body: formData,
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/vault/upload`, {
+      method: 'POST',
+      headers: {
+        'x-user-id': TEST_USER_ID, 
+        'x-legal-consent': 'true'
+      },
+      body: formData,
+    });
 
-  const contentType = response.headers.get('content-type') || '';
-  const payload = contentType.includes('application/json')
-    ? await response.json()
-    : { message: await response.text() };
+    const contentType = response.headers.get('content-type') || '';
+    const payload = contentType.includes('application/json')
+      ? await response.json()
+      : { message: await response.text() };
 
-  if (!response.ok) {
-    throw new Error(payload?.error || payload?.message || `Vault upload failed (${response.status})`);
+    if (!response.ok) {
+      throw new Error(payload?.error || payload?.message || `Vault upload failed (${response.status})`);
+    }
+
+    return payload;
+  } catch (error) {
+    console.error("Fetch error details:", error);
+    throw new Error("Server se connection nahi ho paya. Render server shayad sleep mode se uth raha hai, 1 minute baad dobara try karein.");
   }
-
-  return payload;
 }
 
 /**
  * Triggers automated exam form filling via Render Task endpoint.
  */
 export async function startExamAutomation({ pin, examName }) {
-  const response = await fetch(`${API_BASE_URL}/api/task/start`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-user-id': TEST_USER_ID, 
-      'x-legal-consent': 'true'
-    },
-    body: JSON.stringify({
-      pin,
-      examName: examName.trim(),
-    }),
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/task/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': TEST_USER_ID, 
+        'x-legal-consent': 'true'
+      },
+      body: JSON.stringify({
+        pin,
+        examName: examName.trim(),
+      }),
+    });
 
-  const contentType = response.headers.get('content-type') || '';
-  const payload = contentType.includes('application/json')
-    ? await response.json()
-    : { message: await response.text() };
+    const contentType = response.headers.get('content-type') || '';
+    const payload = contentType.includes('application/json')
+      ? await response.json()
+      : { message: await response.text() };
 
-  if (!response.ok) {
-    throw new Error(payload?.error || payload?.message || `Task start failed (${response.status})`);
+    if (!response.ok) {
+      throw new Error(payload?.error || payload?.message || `Task start failed (${response.status})`);
+    }
+
+    return payload;
+  } catch (error) {
+    console.error("Fetch error details:", error);
+    throw new Error("Task start connection failed.");
   }
-
-  return payload;
 }
