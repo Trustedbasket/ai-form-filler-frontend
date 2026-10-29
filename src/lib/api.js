@@ -1,9 +1,7 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://ai-form-filler-ntzw.onrender.com';
+export const API_BASE_URL = 'https://ai-form-filler-ntzw.onrender.com';
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB strict client-side cap
 
-// Testing ke liye hum ek Dummy User ID bhej rahe hain. 
 const TEST_USER_ID = "ajay-test-id-001";
 
 /**
@@ -17,16 +15,15 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
   formData.append('dob', dob);
   formData.append('photo', photo);
   formData.append('signature', signature);
-  
-  // Backend ki strict security policy (Audit Logger) ko pass karne ke liye Legal Consent add kiya hai
   formData.append('consent', 'true'); 
   formData.append('legalConsent', 'true');
 
   const response = await fetch(`${API_BASE_URL}/api/vault/upload`, {
     method: 'POST',
+    mode: 'cors', // CORS ko explicitly allow karne ke liye
     headers: {
       'x-user-id': TEST_USER_ID, 
-      'x-legal-consent': 'true' // Security Guard ko bypass karne ki chabi
+      'x-legal-consent': 'true'
     },
     body: formData,
   });
@@ -49,10 +46,11 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
 export async function startExamAutomation({ pin, examName }) {
   const response = await fetch(`${API_BASE_URL}/api/task/start`, {
     method: 'POST',
+    mode: 'cors',
     headers: {
       'Content-Type': 'application/json',
       'x-user-id': TEST_USER_ID, 
-      'x-legal-consent': 'true' // Yahan bhi add kar diya
+      'x-legal-consent': 'true'
     },
     body: JSON.stringify({
       pin,
