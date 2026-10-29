@@ -3,9 +3,12 @@ export const API_BASE_URL =
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB strict client-side cap
 
+// Testing ke liye hum ek Dummy User ID bhej rahe hain. 
+// Baad me yahan user ki asli Telegram ID aayegi.
+const TEST_USER_ID = "ajay-test-id-001";
+
 /**
  * Uploads user Biodata, Photo, Signature, and Master PIN to the Render Vault endpoint.
- * Sends multipart/form-data to POST https://ai-form-filler-ntzw.onrender.com/api/vault/upload
  */
 export async function uploadVaultData({ pin, name, fatherName, dob, photo, signature }) {
   const formData = new FormData();
@@ -18,6 +21,9 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
 
   const response = await fetch(`${API_BASE_URL}/api/vault/upload`, {
     method: 'POST',
+    headers: {
+      'x-user-id': TEST_USER_ID, // Backend ko identity batane ke liye
+    },
     body: formData,
   });
 
@@ -35,13 +41,13 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
 
 /**
  * Triggers automated exam form filling via Render Task endpoint.
- * Sends JSON payload to POST https://ai-form-filler-ntzw.onrender.com/api/task/start
  */
 export async function startExamAutomation({ pin, examName }) {
   const response = await fetch(`${API_BASE_URL}/api/task/start`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'x-user-id': TEST_USER_ID, // Backend ko identity batane ke liye
     },
     body: JSON.stringify({
       pin,
