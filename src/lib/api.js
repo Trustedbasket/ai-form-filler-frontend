@@ -1,7 +1,5 @@
 export const API_BASE_URL = 'https://ai-form-filler-ntzw.onrender.com';
-
-export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB strict client-side cap
-
+export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 const TEST_USER_ID = "ajay-test-id-001";
 
 /**
@@ -9,21 +7,25 @@ const TEST_USER_ID = "ajay-test-id-001";
  */
 export async function uploadVaultData({ pin, name, fatherName, dob, photo, signature }) {
   const formData = new FormData();
-  formData.append('pin', pin);
-  formData.append('name', name.trim());
-  formData.append('fatherName', fatherName.trim());
-  formData.append('dob', dob);
+  
+  // Backend ke hisaab se sahi variable names
+  formData.append('masterPin', pin); 
+  formData.append('isFirstTimeSetup', 'true'); 
+  
+  // Saari details ko ek JSON profileBiodata mein pack karna (Jaise backend ko chahiye)
+  const biodata = { name: name.trim(), fatherName: fatherName.trim(), dob };
+  formData.append('profileBiodata', JSON.stringify(biodata));
+
   formData.append('photo', photo);
   formData.append('signature', signature);
   formData.append('consent', 'true'); 
-  formData.append('legalConsent', 'true');
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/vault/upload`, {
       method: 'POST',
       headers: {
         'x-user-id': TEST_USER_ID, 
-        'x-explicit-consent': 'true' // <--- यहाँ x-legal-consent को x-explicit-consent कर दिया है
+        'x-explicit-consent': 'true' 
       },
       body: formData,
     });
@@ -34,13 +36,14 @@ export async function uploadVaultData({ pin, name, fatherName, dob, photo, signa
       : { message: await response.text() };
 
     if (!response.ok) {
-      throw new Error(payload?.error || payload?.message || `Vault upload failed (${response.status})`);
+      throw new Error(payload?.error || payload?.message || `Upload failed (${response.status})`);
     }
 
     return payload;
   } catch (error) {
     console.error("Fetch error details:", error);
-    throw new Error("Server se connection nahi ho paya. Render server shayad sleep mode se uth raha hai, 1 minute baad dobara try karein.");
+    // Ab jhootha message nahi, balki ASLI error screen par dikhega
+    throw new Error(error.message || "Unknown Error Occurred");
   }
 }
 
@@ -54,11 +57,13 @@ export async function startExamAutomation({ pin, examName }) {
       headers: {
         'Content-Type': 'application/json',
         'x-user-id': TEST_USER_ID, 
-        'x-explicit-consent': 'true' // <--- यहाँ भी x-explicit-consent कर दिया है
+        'x-explicit-consent': 'true'
       },
       body: JSON.stringify({
-        pin,
+        masterPin: pin,
         examName: examName.trim(),
+        portalUrl: 'https://test-portal.com', // Backend ko ye zaroori chahiye tha
+        recipientId: 'TELEGRAM_TEST_USER' // Backend ko ye zaroori chahiye tha
       }),
     });
 
@@ -68,12 +73,12 @@ export async function startExamAutomation({ pin, examName }) {
       : { message: await response.text() };
 
     if (!response.ok) {
-      throw new Error(payload?.error || payload?.message || `Task start failed (${response.status})`);
+      throw new Error(payload?.error || payload?.message || `Task failed (${response.status})`);
     }
 
     return payload;
   } catch (error) {
     console.error("Fetch error details:", error);
-    throw new Error("Task start connection failed.");
+    throw new Error(error.message);
   }
 }
